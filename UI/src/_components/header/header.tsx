@@ -1,7 +1,6 @@
 import {Link, useLocation} from "react-router";
 import BottomNavigation from '@mui/material/BottomNavigation';
 import BottomNavigationAction from '@mui/material/BottomNavigationAction';
-import ChatIcon from '@mui/icons-material/Chat';
 import SearchIcon from '@mui/icons-material/Search';
 import BeachAccessIcon from '@mui/icons-material/BeachAccess';
 import HomeIcon from '@mui/icons-material/Home';
@@ -54,16 +53,10 @@ export default function Header() {
                                 to="/"
                             />
                             <BottomNavigationAction
-                                label="Chat"
-                                icon={<ChatIcon/>}
-                                component={Link}
-                                to="/chat"
-                            />
-                            <BottomNavigationAction
-                                label="Search"
+                                label="Users"
                                 icon={<SearchIcon/>}
                                 component={Link}
-                                to="/search"
+                                to="/users"
                             />
                         </BottomNavigation>
                     </div>

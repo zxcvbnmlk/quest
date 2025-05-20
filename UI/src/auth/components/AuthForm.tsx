@@ -11,7 +11,7 @@ import {useEffect} from "react";
 
 export default function AuthForm() {
     const dispatch = useDispatch();
-    const { username, token,isLoading } = useSelector((state: RootState) => state.auth);
+    const { username, token } = useSelector((state: RootState) => state.auth);
     const navigate = useNavigate();
 
     const {
@@ -31,7 +31,6 @@ export default function AuthForm() {
     },[username,token])
 
 
-    if (isLoading) {
         return (
             <>
                 <h1>Авторизация</h1>
@@ -42,9 +41,9 @@ export default function AuthForm() {
                 >
                     <TextField
                         label="Логин"
-                        {...register("username", {required: "Введите логин"})}
-                        error={!!errors.username}
-                        helperText={errors.username?.message}
+                        {...register("login", {required: "Введите логин"})}
+                        error={!!errors.login}
+                        helperText={errors.login?.message}
                     />
                     <TextField
                         label="Пароль"
@@ -58,6 +57,6 @@ export default function AuthForm() {
 
             </>
         )
-    }
+
 
 }

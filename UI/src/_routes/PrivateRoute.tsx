@@ -15,5 +15,6 @@ export default function PrivateRoute({ children }: Props) {
         return <div>Загрузка...</div>;
     }
     const isAuthenticated = !!username && !!token;
+    console.log('isAuthenticated', isAuthenticated);
     return isAuthenticated ? children : <Navigate to="/auth" />;
 }

@@ -4,9 +4,12 @@ import {authFormValues, credentials} from "@src/auth/models/auth.ts";
 
 
 const initialState: credentials = {
+    login: '',
     username: '',
     token: '',
     isLoading: true,
+    reg: false,
+
 };
 
 const authSlice = createSlice({
@@ -16,22 +19,34 @@ const authSlice = createSlice({
         authRequest: (state, _action: PayloadAction<authFormValues>) => {
             state.isLoading = true;
         },
+        regRequest: (state, _action: PayloadAction<authFormValues>) => {
+            state.isLoading = true;
+        },
+        regSuccess: (state, action: PayloadAction<any>) => {
+            console.log("regSuccess", action.payload);
+            state.success = action.payload;
+            state.isLoading = false;
+            state.reg = false
+        },
         authSuccess: (state, action: PayloadAction<credentials>) => {
             state.username = action.payload.username;
             state.token = action.payload.token;
             state.isLoading = false;
-
-
         },
         authFailure:  (state, action: PayloadAction<Error>) => {
             state.isLoading = false;
             state.error = action.payload;
+
         },
         logout: (state) => {
             localStorage.removeItem("credentials")
             state.username ='';
             state.token ='';
-            state.isLoading = true;
+            state.isLoading = false;
+            state.reg = false
+        },
+        toggleReg:  (state) => {
+            state.reg =  !state.reg;
         },
 
     }
@@ -40,7 +55,10 @@ const authSlice = createSlice({
 export const {
     authRequest,
     authSuccess,
+    regRequest,
+    regSuccess,
     authFailure,
-    logout
+    logout,
+    toggleReg
 } =  authSlice.actions;
 export const authReducer = authSlice.reducer;
