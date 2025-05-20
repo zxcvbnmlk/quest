@@ -1,0 +1,40 @@
+header {
+  height: 55px;
+  border-bottom: 2px solid;
+  display: flex;
+  justify-content: space-between;
+  .left-block {
+    display: flex;
+    .logo {
+      display: flex;
+      align-items: center;
+      height: 100%;
+      padding-left: 20px;
+      padding-right: 50px;
+
+      a {
+        font-size: 24px;
+        font-weight: bold;
+        color: #1976d2;
+        display: block;
+
+      }
+    }
+  }
+  .right-block {
+    display: flex;
+    .login {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin: 20px;
+      font-weight: 700;
+    }
+  }
+  .MuiBottomNavigation-root {
+    justify-content: flex-start;
+    background: transparent;
+  }
+
+}
+
