@@ -6,35 +6,44 @@ header {
   .left-block {
     display: flex;
     .logo {
+
       display: flex;
       align-items: center;
       height: 100%;
       padding-left: 20px;
       padding-right: 50px;
-
+      white-space: nowrap;
+      .MuiSvgIcon-root {
+        color: #1b5612;
+        width: 40px;
+        height: 40px;
+      }
       a {
-        font-size: 24px;
-        font-weight: bold;
-        color: #1976d2;
+        font-size: 32px;
+        font-weight: 700;
+        color: #3aa929;
         display: block;
+        font-family: sans-serif;
 
       }
     }
   }
   .right-block {
     display: flex;
-    .login {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      margin: 20px;
-      font-weight: 700;
-    }
+
   }
   .MuiBottomNavigation-root {
     justify-content: flex-start;
     background: transparent;
   }
+  .MuiButtonBase-root {
+    max-width: none;
+    .MuiBottomNavigationAction-label {
+      white-space: nowrap;
+    }
+  }
 
 }
+.login {
 
+}

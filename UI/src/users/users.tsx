@@ -1,7 +1,8 @@
 import {useEffect} from "react";
 import {useDispatch, useSelector} from "react-redux";
 import {RootState} from "@src/_redux/store.ts";
-import {getUsersRequest} from "@src/users/slices/userSlice.ts";
+import {getUsersRequest} from "@src/users/slices/user.slice.ts";
+import {user} from "@src/_models/user.ts";
 
 export default function Users() {
     const { users, loading, error } = useSelector((state: RootState) => state.users);
@@ -19,7 +20,7 @@ export default function Users() {
                 <h1>Клиенты</h1>
 
                 <ul  className={'users-list'}>
-                    {users.map((user: any) => (
+                    {users.map((user: user) => (
                         <li key={user.id}>
                             <span className={'login'}>
                                 {user.login}

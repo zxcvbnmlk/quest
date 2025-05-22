@@ -1,69 +1,58 @@
-import {Link, useLocation} from "react-router";
-import BottomNavigation from '@mui/material/BottomNavigation';
-import BottomNavigationAction from '@mui/material/BottomNavigationAction';
-import SearchIcon from '@mui/icons-material/Search';
-import BeachAccessIcon from '@mui/icons-material/BeachAccess';
+import {Link} from "react-router";
 import HomeIcon from '@mui/icons-material/Home';
-import React, {useEffect} from "react";
+import {useState} from "react";
 import './header.scss'
+import './menu.scss'
 import {logout} from "@src/auth/slices/authSlice.ts";
-import {Button} from "@mui/material";
 import {useDispatch, useSelector} from "react-redux";
 import {useNavigate} from "react-router-dom";
 import {RootState} from "@src/_redux/store.ts";
+import DirectionsRunIcon from '@mui/icons-material/DirectionsRun';
+import {elastic as Menu} from 'react-burger-menu'
+import ManageAccountsIcon from '@mui/icons-material/ManageAccounts';
+import ConstructionIcon from '@mui/icons-material/Construction';
 
-enum Pages {
-    "" = 0,
-    users = 1
-}
+
+
 
 export default function Header() {
-    const [page, setPage] = React.useState(Pages[""]);
-    const {username,role} = useSelector((state: RootState) => state.auth);
+    const {username, role} = useSelector((state: RootState) => state.auth);
+    const [handleOnOpen,setHandleOnOpen] = useState(false);
     const dispatch = useDispatch();
     const navigate = useNavigate();
-    const location = useLocation().pathname.split('/')[1]
-    useEffect(() => {
-        setPage(Pages[location as keyof typeof Pages])
-    })
-
-
 
     function exit() {
-
+        setHandleOnOpen(!handleOnOpen);
         dispatch(logout());
-        navigate("/auth");
+        navigate("/");
     }
-    return (
-        <header>
-                    <div className="left-block">
-                        <div className="logo"><BeachAccessIcon/><Link to="/">React Chat</Link></div>
-                        <BottomNavigation
-                            showLabels
-                            value={page}
-                            onChange={(_event, newPage) => {
-                                setPage(newPage);
-                            }}
-                        >
-                            <BottomNavigationAction
-                                label="Home"
-                                icon={<HomeIcon/>}
-                                component={Link}
-                                to="/"
-                            />
-                            {role === 'admin' && <BottomNavigationAction
-                                label="Users"
-                                icon={<SearchIcon/>}
-                                component={Link}
-                                to="/users"
-                            />}
-                        </BottomNavigation>
-                    </div>
-            <div className="right-block">
-                <div className="login">{username}</div>
-                <Button onClick={exit}>Выйти</Button>
-            </div>
 
-        </header>
+    function goTo(s: string) {
+        setHandleOnOpen(!handleOnOpen);
+        navigate(s);
+    }
+
+    return (
+        <>
+            <Menu right isOpen={ handleOnOpen } onOpen={ () => setHandleOnOpen(!handleOnOpen) } onClose={ () => setHandleOnOpen(!handleOnOpen) } >
+                {role === 'admin' && <div className="login">{username}</div>}
+                <a id="home" className="menu-item" href="/"><Link  onClick={() => goTo('/')} to="/"><HomeIcon/><span>Главная</span></Link></a>
+                {role === 'admin' && <a id="home" className="menu-item" onClick={() => goTo('/users')}><Link to="/users"><ManageAccountsIcon/><span>Клиенты</span></Link></a>}
+                {role === 'admin' && <a id="home" className="menu-item" onClick={() => goTo('/build-quests')} ><ConstructionIcon/><span>Создание квеста</span></a>}
+                {role === 'admin' && <a onClick={exit} className="menu-item--small" href=""><span>Выйти</span></a>}
+
+            </Menu>
+            <header>
+                <div className="left-block">
+                    <div className="logo"><DirectionsRunIcon/><Link to="/">Zoom quests</Link></div>
+                </div>
+                <div className="right-block">
+                    {/*<div className="login">{username}</div>*/}
+                    {/*<Button onClick={exit}>Выйти</Button>*/}
+                </div>
+
+            </header>
+        </>
+
     )
 }

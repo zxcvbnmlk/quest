@@ -3,8 +3,8 @@ import createSagaMiddleware from "redux-saga";
 import { all } from "redux-saga/effects";
 import {authReducer} from "@src/auth/slices/authSlice.ts";
 import watchAuthUser from "@src/auth/sagas/authSaga.ts";
-import {usersReducer} from "@src/users/slices/userSlice.ts";
-import watchGetUsers from "@src/users/sagas/usersSaga.ts";
+import {usersReducer} from "@src/users/slices/user.slice.ts";
+import watchGetUsers from "@src/users/sagas/users.saga.ts";
 
 const sagaMiddleware = createSagaMiddleware();
 

@@ -9,12 +9,10 @@ interface Props {
 
 export default function PrivateRoute({ children }: Props) {
 
-    const { username, token , isLoading} = useSelector((state: RootState) => state.auth);
-    console.log('isAuthenticated111',isLoading);
+    const { username, token } = useSelector((state: RootState) => state.auth);
     // if (isLoading) {
     //     return <div>Загрузка...</div>;
     // }
     const isAuthenticated = !!username && !!token;
-    console.log('isAuthenticated', isAuthenticated);
     return isAuthenticated ? children : <Navigate to="/auth" />;
 }

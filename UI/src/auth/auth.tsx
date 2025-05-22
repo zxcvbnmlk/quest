@@ -9,8 +9,7 @@ import {Link} from "react-router-dom";
 
 export default function Auth() {
     const dispatch = useDispatch();
-    let {reg,error,isLoading,success} = useSelector((state: RootState) => state.auth);
-    console.log('Auth',isLoading)
+    let {reg,error, success} = useSelector((state: RootState) => state.auth);
 
         return (
             <div className={'auth'}>

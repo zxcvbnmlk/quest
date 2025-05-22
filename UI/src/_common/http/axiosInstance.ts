@@ -11,11 +11,9 @@ axiosInstance.interceptors.request.use(
     (config) => {
 
         const credentials = localStorage.getItem('credentials');
-        console.log('credentials',credentials);
         if (credentials) {
 
             const { token } = JSON.parse(credentials);
-            console.log('token',token);
             config.headers.Authorization = `Bearer ${token}`;
         }
         return config;

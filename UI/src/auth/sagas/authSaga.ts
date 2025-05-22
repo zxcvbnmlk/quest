@@ -18,7 +18,6 @@ function* authUser(action: authUsersAction) {
             token: response.data.token,
             role: response.data.role,
         }));
-        console.log('response.data',response.data);
         yield put(authSuccess(response.data));
     } catch (error: any) {
         yield put(authFailure(error.response.data.message));

@@ -1,13 +1,13 @@
 import { call, put, takeLatest } from "redux-saga/effects";
 import {AxiosResponse} from "axios";
-import {getUsersFailure, getUsersRequest, getUsersSuccess} from "@src/users/slices/userSlice.ts";
+import {getUsersFailure, getUsersRequest, getUsersSuccess} from "@src/users/slices/user.slice.ts";
 import axios from '@src/_common/http/axiosInstance';
+import {user} from "@src/_models/user.ts";
 function* getUsers() {
     try {
-        const response: AxiosResponse<any> = yield call(() =>
+        const response: AxiosResponse<user[]> = yield call(() =>
             axios.get(`/users`)
         );
-        console.log('response.data',response.data)
         yield put(getUsersSuccess(response.data));
     } catch (error: any) {
         yield put(getUsersFailure(error.message));
