@@ -6,6 +6,7 @@ import {useForm} from "react-hook-form";
 import {regFormValues} from "@src/auth/models/auth.ts";
 import {RootState} from "@src/_redux/store.ts";
 import {useEffect} from "react";
+import {isValidEmail} from "@src/_common/format/email.ts";
 
 
 
@@ -28,6 +29,7 @@ export default function RegForm() {
 
     const password = watch("password");
 
+
     useEffect(() => {
         if (!!username && !!token ) {
             navigate("/");
@@ -44,8 +46,10 @@ export default function RegForm() {
                     onSubmit={handleSubmit(onSubmit)}
                 >
                     <TextField
-                        label="Логин"
-                        {...register("login", {required: "Введите логин"})}
+                        label="E-mail"
+                        {...register("login", {required: "Введите E-mail",
+                            validate: (value) =>
+                                isValidEmail(value) || "E-mail не корректен"})}
                         error={!!errors.login}
                         helperText={errors.login?.message}
                     />
@@ -77,6 +81,5 @@ export default function RegForm() {
 
             </>
         )
-
 
 }

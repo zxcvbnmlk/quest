@@ -3,9 +3,12 @@ export interface credentials {
     login: string,
     username:string,
     token: string,
-    isLoading: boolean,
+    isLoading?: boolean,
+    role: string
     error?: Error,
-    success?: {},
+    success?: {
+        message: string,
+    },
     reg?: boolean
 };
 

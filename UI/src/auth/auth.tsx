@@ -5,14 +5,18 @@ import RegForm from "@src/auth/components/RegForm.tsx";
 import {useDispatch, useSelector} from "react-redux";
 import {RootState} from "@src/_redux/store.ts";
 import {toggleReg} from "@src/auth/slices/authSlice.ts";
+import {Link} from "react-router-dom";
 
 export default function Auth() {
     const dispatch = useDispatch();
-    let {reg,error,isLoading} = useSelector((state: RootState) => state.auth);
+    let {reg,error,isLoading,success} = useSelector((state: RootState) => state.auth);
+    console.log('Auth',isLoading)
 
-    if (!isLoading) {
         return (
             <div className={'auth'}>
+                <Link to="/">
+                    <Button>Назад</Button>
+                </Link>
                 {!reg && <AuthForm/>}
                 {!reg && <Button variant="text" onClick={() => dispatch(toggleReg())}>Регистрация</Button>}
 
@@ -20,7 +24,8 @@ export default function Auth() {
                 {reg && <Button variant="text" onClick={() => dispatch(toggleReg())}>Вход</Button>}
 
                 {error && <div>{error.toString()}</div>}
+                {success && <div>{success.message}</div>}
             </div>
         )
-    }
+
 }

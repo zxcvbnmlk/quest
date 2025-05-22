@@ -7,7 +7,7 @@ import {API_LOCAL} from "@src/_env/env.ts";
 function* authUser(action: authUsersAction) {
     try {
         const response: AxiosResponse<credentials> = yield call(() =>
-            axios.post(`${API_LOCAL}api/auth`,{
+            axios.post(`${API_LOCAL}/auth`,{
                 login: action.payload.login,
                 password: action.payload.password,
             })
@@ -16,7 +16,9 @@ function* authUser(action: authUsersAction) {
             login: response.data.login,
             username: response.data.username,
             token: response.data.token,
+            role: response.data.role,
         }));
+        console.log('response.data',response.data);
         yield put(authSuccess(response.data));
     } catch (error: any) {
         yield put(authFailure(error.response.data.message));
@@ -25,7 +27,7 @@ function* authUser(action: authUsersAction) {
 function* regUser(action: regUsersAction) {
     try {
         const response: AxiosResponse<credentials> = yield call(() =>
-            axios.post(`${API_LOCAL}api/addUser`,{
+            axios.post(`${API_LOCAL}/addUser`,{
                 login: action.payload.login,
                 username: action.payload.username,
                 password: action.payload.password,

@@ -14,13 +14,12 @@ import {RootState} from "@src/_redux/store.ts";
 
 enum Pages {
     "" = 0,
-    chat = 1,
-    search = 2
+    users = 1
 }
 
 export default function Header() {
     const [page, setPage] = React.useState(Pages[""]);
-    const {username} = useSelector((state: RootState) => state.auth);
+    const {username,role} = useSelector((state: RootState) => state.auth);
     const dispatch = useDispatch();
     const navigate = useNavigate();
     const location = useLocation().pathname.split('/')[1]
@@ -52,12 +51,12 @@ export default function Header() {
                                 component={Link}
                                 to="/"
                             />
-                            <BottomNavigationAction
+                            {role === 'admin' && <BottomNavigationAction
                                 label="Users"
                                 icon={<SearchIcon/>}
                                 component={Link}
                                 to="/users"
-                            />
+                            />}
                         </BottomNavigation>
                     </div>
             <div className="right-block">

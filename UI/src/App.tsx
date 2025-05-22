@@ -1,6 +1,6 @@
 import { BrowserRouter as Router } from "react-router";
 import AppRouter from "./_routes/appRouter";
-import Header from "./_components/header/header.tsx";
+import Header from "./_common/header/header.tsx";
 import './App.scss'
 import {useDispatch, useSelector} from "react-redux";
 import {RootState} from "@src/_redux/store.ts";

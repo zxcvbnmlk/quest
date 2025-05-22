@@ -10,9 +10,8 @@ import Users from "@src/users/users.tsx";
 export default function AppRouter() {
     return (
         <Routes>
-
+            <Route path="/" element={<Home />} />
             <Route path="/auth" element={<Auth />} />
-            <Route path="/" element={<PrivateRoute><Home /></PrivateRoute>} />
             <Route path="/users" element={<PrivateRoute><Users /></PrivateRoute>} />
         </Routes>
 
