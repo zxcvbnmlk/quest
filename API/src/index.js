@@ -8,7 +8,7 @@ const pool = require('./db');
 const saltRounds = 11;
 const jwt = require('jsonwebtoken');
 let apiRoutes = express.Router();
-
+const port = process.env.PORT || 3000;
 const SECRET_KEY = 'eyJpZCI6IjIwM2YzZWVmLWF';
 
 apiRoutes.use((req, res, next) => { //allow cross-origin requests
@@ -38,7 +38,6 @@ function verifyToken(req, res, next) {
     }
 }
 async function verifyAdmin(req, res, next) {
-    console.log('req', req)
     const id = req.user.id;
     const existingUser = await pool.query(
         'SELECT * FROM users WHERE id = $1',
@@ -53,7 +52,6 @@ async function verifyAdmin(req, res, next) {
 // Parsers
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false}));
-
 app.use('/api', apiRoutes);
 
 
@@ -68,23 +66,27 @@ apiRoutes.get('/users', verifyToken, verifyAdmin , async (req, res) => {
         const result = await pool.query('SELECT * FROM users'); // таблица users
         res.status(200).json(result.rows);
     } catch (err) {
-        console.error(err.message);
         res.status(500).send('Server error');
     }
 });
+apiRoutes.get('/quests', async (req, res) => {
+    try {
+        const result = await pool.query('SELECT * FROM quests'); // таблица users
+        res.status(200).json(result.rows);
+    } catch (err) {
+        res.status(500).send('Server error');
+    }
+});
+
 apiRoutes.post('/addUser', async (req, res) => {
-    console.log('req.body111',req.body)
     const {login, username, password} = req.body;
-    console.log('hear1',login)
     const hashedPassword = await bcrypt.hash(password, saltRounds);
-    console.log('hear2',hashedPassword)
     try {
 
         const existingUser = await pool.query(
             'SELECT * FROM users WHERE login = $1',
             [login]
         );
-        console.log('existingUser.rows',existingUser.rows.length)
         if (existingUser.rows.length > 0) {
             return res.status(400).json({ message: 'Email уже существует' });
         }
@@ -101,7 +103,6 @@ apiRoutes.post('/addUser', async (req, res) => {
 
 })
 apiRoutes.post('/auth', async (req, res) => {
-    const random = Math.floor(Math.random() * 111111111111111111111111111111);
     const {login, password} = req.body;
     try {
         const userResult = await pool.query(
@@ -114,8 +115,12 @@ apiRoutes.post('/auth', async (req, res) => {
         const user = userResult.rows[0];
 
         const isPasswordValid = await bcrypt.compare(password, user.password);
-
         if (!isPasswordValid) {
+            // const hashedPassword = await bcrypt.hash(password, saltRounds);
+            // await pool.query(
+            //     'UPDATE users SET password = $1 WHERE id = $2',
+            //     [hashedPassword, user.id]
+            // );
             return res.status(401).json({ message: 'Неверный логин или пароль2' });
         }
 
@@ -138,61 +143,11 @@ apiRoutes.post('/auth', async (req, res) => {
             token: token
         });
     } catch (error) {
-        console.error(error);
         res.status(500).send('Database error');
     }
 
 
 })
-
-const io = require("socket.io")(index, {
-    cors: {
-        origin: "http://localhost:5173",
-        methods: ["GET", "POST"],
-        allowedHeaders: ["my-custom-header"],
-        credentials: true
-    }
-});
-const port = process.env.PORT || 3000;
-const msgs = [];
-let users = [];
-
-
-io.on('connection', (socket) => {
-    socket.join("room1");
-    socket.on('message', (message) => {
-        const msg = {
-            token: socket.handshake.query.token,
-            username: socket.handshake.query.username,
-            text: message,
-            date: (new Date).toLocaleTimeString()
-        }
-        io.emit('message', msg);
-        msgs.push(msg)
-    });
-
-
-    users = [];
-    for (let [id, socket] of io.of("/").sockets) {
-        if (!users.find(item => item.username === socket.handshake.query.username
-        )) {
-            users.push({
-                userID: id,
-                username: socket.handshake.query.username,
-                token: socket.handshake.query.token
-            });
-        }
-    }
-    io.emit("messageAll", msgs);
-    io.emit("users", users);
-
-
-    socket.on('disconnect', () => {
-        users = users.filter(item => item.token !== socket.handshake.query.token);
-        io.emit("users", users);
-    });
-
-});
 
 index.listen(port, () => {
     console.log(`started on port: ${port}`);

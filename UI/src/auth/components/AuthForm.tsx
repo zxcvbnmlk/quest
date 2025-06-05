@@ -25,40 +25,41 @@ export default function AuthForm() {
     };
 
     useEffect(() => {
+
         if (!!username && !!token ) {
             navigate("/");
         }
     },[username,token])
 
 
-        return (
-            <>
-                <h1>Авторизация</h1>
-                <Box
-                    component="form"
-                    noValidate
-                    onSubmit={handleSubmit(onSubmit)}
-                >
-                    <TextField
-                        label="E-mail"
-                        {...register("login", {required: "Введите E-mail",
-                            validate: (value) =>
-                                isValidEmail(value) || "E-mail не корректен"})}
-                        error={!!errors.login}
-                        helperText={errors.login?.message}
-                    />
-                    <TextField
-                        label="Пароль"
-                        type="password"
-                        {...register("password", {required: "Введите пароль"})}
-                        error={!!errors.password}
-                        helperText={errors.password?.message}
-                    />
-                    <Button variant="contained" type="submit">Войти</Button>
-                </Box>
+    return (
+        <>
+            <h1>Авторизация</h1>
+            <Box
+                component="form"
+                noValidate
+                onSubmit={handleSubmit(onSubmit)}
+            >
+                <TextField
+                    label="E-mail"
+                    {...register("login", {required: "Введите E-mail",
+                        validate: (value) =>
+                            isValidEmail(value) || "E-mail не корректен"})}
+                    error={!!errors.login}
+                    helperText={errors.login?.message}
+                />
+                <TextField
+                    label="Пароль"
+                    type="password"
+                    {...register("password", {required: "Введите пароль"})}
+                    error={!!errors.password}
+                    helperText={errors.password?.message}
+                />
+                <Button variant="contained" type="submit">Войти</Button>
+            </Box>
 
-            </>
-        )
+        </>
+    )
 
 
 }

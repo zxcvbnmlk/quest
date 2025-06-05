@@ -2,23 +2,23 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 
 const initialState: any = {
-    users: [],
+    quests: [],
     loading: false,
     error: null,
 };
 
 const buildQuestsSlice = createSlice({
-    name: "users",
+    name: "quests",
     initialState,
     reducers: {
-        getUsersRequest: (state) => {
+        getQuestsRequest: (state) => {
             state.loading = true;
         },
-        getUsersSuccess: (state, action: PayloadAction<any>) => {
+        getQuestsSuccess: (state, action: PayloadAction<any>) => {
             state.loading = false;
             state.users = action.payload;
         },
-        getUsersFailure: (state, action: PayloadAction<string>) => {
+        getQuestsFailure: (state, action: PayloadAction<string>) => {
             state.loading = false;
             state.error = action.payload;
         },
@@ -26,8 +26,8 @@ const buildQuestsSlice = createSlice({
 });
 
 export const {
-    getUsersRequest,
-    getUsersSuccess,
-    getUsersFailure
+    getQuestsRequest,
+    getQuestsSuccess,
+    getQuestsFailure
 } =  buildQuestsSlice.actions;
 export const usersReducer = buildQuestsSlice.reducer;

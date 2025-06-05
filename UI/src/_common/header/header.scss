@@ -6,7 +6,6 @@ header {
   .left-block {
     display: flex;
     .logo {
-
       display: flex;
       align-items: center;
       height: 100%;
@@ -28,10 +27,7 @@ header {
       }
     }
   }
-  .right-block {
-    display: flex;
 
-  }
   .MuiBottomNavigation-root {
     justify-content: flex-start;
     background: transparent;
