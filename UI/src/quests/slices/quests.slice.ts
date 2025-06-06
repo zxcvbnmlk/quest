@@ -11,6 +11,7 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 const initialState: any = {
     quests : [],
+    questions : [],
 };
 // const loading = false
 // initialState: {initialState, loading},
@@ -27,16 +28,28 @@ const questsSlice = createSlice({
             // state.loading = false;
             state.quests = action.payload;
         },
-        getQuestsFailure: (state, action: PayloadAction<string>) => {
+        questsFailure: (state, action: PayloadAction<string>) => {
             // state.loading = false;
             state.error = action.payload;
         },
+        getQuestionsRequest: (state) => {
+            // state.loading = true;
+            console.log('state', state);
+        },
+        getQuestionsSuccess: (state, action: PayloadAction<any>) => {
+            console.log('getQuestsSuccess action.payload', action.payload);
+            // state.loading = false;
+            state.questions = action.payload;
+        },
+
     }
 });
 
 export const {
     getQuestsRequest,
     getQuestsSuccess,
-    getQuestsFailure
+    questsFailure,
+    getQuestionsRequest,
+    getQuestionsSuccess
 } =  questsSlice.actions;
 export const questsReducer = questsSlice.reducer;

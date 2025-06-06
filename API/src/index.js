@@ -69,9 +69,18 @@ apiRoutes.get('/users', verifyToken, verifyAdmin , async (req, res) => {
         res.status(500).send('Server error');
     }
 });
-apiRoutes.get('/quests', async (req, res) => {
+apiRoutes.get('/getQuests', async (req, res) => {
     try {
         const result = await pool.query('SELECT * FROM quests'); // таблица users
+        res.status(200).json(result.rows);
+    } catch (err) {
+        res.status(500).send('Server error');
+    }
+});
+
+apiRoutes.get('/getQuestions', async (req, res) => {
+    try {
+        const result = await pool.query('SELECT id, name, description, image, question, buttons'); // таблица users
         res.status(200).json(result.rows);
     } catch (err) {
         res.status(500).send('Server error');

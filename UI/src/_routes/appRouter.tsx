@@ -3,7 +3,8 @@ import {Route, Routes } from "react-router";
 import Auth from "@src/auth/auth.tsx";
 import PrivateRoute from "@src/_routes/PrivateRoute.tsx";
 import Users from "@src/users/users.tsx";
-import BuildQuests from "@src/build-quests/build-quests.tsx";
+import BuildQuests from "@src/quests/components/build-quests.tsx";
+
 
 
 
