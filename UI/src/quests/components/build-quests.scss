@@ -1,9 +1,36 @@
-.quests-list {
-  .quest{
-    .name {
-      font-weight: bold;
-      font-size: 20px;
+.build-quest {
+  .MuiFormControl-root {
+    display: block;
+    margin-bottom: 20px;
+  }
+  .question {
+    margin-bottom: 50px;
+    margin-top: 15px;
+    max-width: 800px;
+    .question-id {
+      margin-bottom: 10px;
+      span {
+        font-weight: bold;
+      }
     }
+  }
+  .quest-form {
+    .quest {
+      margin: 15px 0;
+      max-width: 800px;
+    }
+  }
+  .questions-list {
+    margin: 20px 0;
+  }
+  .quests-list {
+    .quest{
+      .name {
+        font-weight: bold;
+        font-size: 20px;
+      }
 
+    }
   }
 }
+

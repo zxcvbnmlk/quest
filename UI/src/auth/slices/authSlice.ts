@@ -26,7 +26,6 @@ const authSlice = createSlice({
             delete state.error
         },
         regSuccess: (state, action: PayloadAction<any>) => {
-            console.log("regSuccess", action.payload);
             state.success = { message: action.payload.data};
             state.isLoading = false;
             state.reg = false

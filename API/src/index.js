@@ -9,7 +9,8 @@ const saltRounds = 11;
 const jwt = require('jsonwebtoken');
 let apiRoutes = express.Router();
 const port = process.env.PORT || 3000;
-const SECRET_KEY = 'eyJpZCI6IjIwM2YzZWVmLWF';
+const { SECRET_KEY } = require('./config');
+const {authorizeAdmin, verifyToken} = require("./helpers/middleware");
 
 apiRoutes.use((req, res, next) => { //allow cross-origin requests
     res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
@@ -23,31 +24,8 @@ apiRoutes.use((req, res, next) => { //allow cross-origin requests
     }
     next();
 });
-
-function verifyToken(req, res, next) {
-
-    const authHeader = req.headers['authorization'];
-    const token = authHeader?.split(' ')[1];
-    if (!token) return res.sendStatus(401);
-    try {
-        const decoded = jwt.verify(token, SECRET_KEY);
-        req.user = decoded;
-        next();
-    } catch (err) {
-        return res.sendStatus(403);
-    }
-}
-async function verifyAdmin(req, res, next) {
-    const id = req.user.id;
-    const existingUser = await pool.query(
-        'SELECT * FROM users WHERE id = $1',
-        [id]
-    );
-    if (existingUser.rows.length > 0 && existingUser.rows[0].role !== 'admin') {
-        return res.sendStatus(401);
-    }
-    next();
-}
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ limit: '10mb', extended: true }));
 
 // Parsers
 app.use(bodyParser.json());
@@ -61,7 +39,7 @@ app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, 'dist/index.html'));
 });
 
-apiRoutes.get('/users', verifyToken, verifyAdmin , async (req, res) => {
+apiRoutes.get('/users', authorizeAdmin, async (req, res) => {
     try {
         const result = await pool.query('SELECT * FROM users'); // таблица users
         res.status(200).json(result.rows);
@@ -78,12 +56,68 @@ apiRoutes.get('/getQuests', async (req, res) => {
     }
 });
 
-apiRoutes.get('/getQuestions', async (req, res) => {
+apiRoutes.post('/getQuestions', authorizeAdmin, async (req, res) => {
+    const {questions} = req.body;
+    console.log('questions',questions);
     try {
-        const result = await pool.query('SELECT id, name, description, image, question, buttons'); // таблица users
+        const result = await pool.query(
+            `SELECT q.*
+               FROM unnest($1::int[]) WITH ORDINALITY AS ids(id, ord)
+               JOIN questions q ON q.id = ids.id
+               ORDER BY ids.ord`,
+            [questions]
+        );
         res.status(200).json(result.rows);
     } catch (err) {
+        console.log('err',err);
         res.status(500).send('Server error');
+    }
+});
+apiRoutes.put('/putQuest', authorizeAdmin, async (req, res) => {
+    const {quest} = req.body;
+    try {
+        quest.questions = JSON.stringify(quest.questions);
+        if (quest.id.length > 0) {
+            await pool.query(
+                'UPDATE quests SET name = $2, description = $3, image = $4, start = $5, price = $6, duration = $7, questions = $8 WHERE id = $1',
+                [quest.id, quest.name, quest.description, quest.image, quest.start, quest.price, quest.duration, quest.questions]
+            );
+        } else {
+            await pool.query(
+                'INSERT INTO quests (name, description, image, start, price, duration, questions) VALUES ($1, $2, $3, $4, $5, $6, $7)',
+                [quest.name, quest.description, quest.image, quest.start, quest.price, quest.duration, quest.questions]
+            );
+        }
+
+        res.status(200).send('Вопросы сохранены');
+    } catch (error) {
+        console.log('error',error)
+        res.status(500).send('Database error');
+    }
+});
+apiRoutes.put('/putQuestions', authorizeAdmin, async (req, res) => {
+    const {questions} = req.body.questions;
+    try {
+        for (const question of questions) {
+                const existingUser = await pool.query(
+                    'SELECT id FROM questions WHERE id = $1',
+                    [question.id]
+                );
+                if (existingUser.rows.length > 0) {
+                    await pool.query(
+                        'UPDATE questions  SET name = $2, description = $3, question = $4, buttons = $5, answer = $6 WHERE id = $1',
+                        [question.id, question.name, question.description, question.question, question.buttons, question.answer]
+                    );
+                } else {
+                    await pool.query(
+                        'INSERT INTO questions (name, description, question, buttons, answer) VALUES ($1, $2, $3, $4, $5)',
+                        [question.name, question.description, question.question, question.buttons, question.answer]
+                    );
+                }
+        }
+        res.status(200).send('Вопросы сохранены');
+    } catch (error) {
+        res.status(500).send('Database error');
     }
 });
 
@@ -125,11 +159,6 @@ apiRoutes.post('/auth', async (req, res) => {
 
         const isPasswordValid = await bcrypt.compare(password, user.password);
         if (!isPasswordValid) {
-            // const hashedPassword = await bcrypt.hash(password, saltRounds);
-            // await pool.query(
-            //     'UPDATE users SET password = $1 WHERE id = $2',
-            //     [hashedPassword, user.id]
-            // );
             return res.status(401).json({ message: 'Неверный логин или пароль2' });
         }
 
@@ -138,6 +167,7 @@ apiRoutes.post('/auth', async (req, res) => {
                 id: user.id,
                 login: user.login,
                 username: user.username,
+                role: user.role
             },
             SECRET_KEY,
             { expiresIn: '30d' } // токен истекает через 30 дней
@@ -154,8 +184,6 @@ apiRoutes.post('/auth', async (req, res) => {
     } catch (error) {
         res.status(500).send('Database error');
     }
-
-
 })
 
 index.listen(port, () => {
@@ -163,3 +191,8 @@ index.listen(port, () => {
 });
 
 
+// const hashedPassword = await bcrypt.hash(password, saltRounds);
+// await pool.query(
+//     'UPDATE users SET password = $1 WHERE id = $2',
+//     [hashedPassword, user.id]
+// );

@@ -2,7 +2,7 @@ import {useEffect} from "react";
 import {useDispatch, useSelector} from "react-redux";
 import {RootState} from "@src/_redux/store.ts";
 import {getQuestsRequest} from "@src/quests/slices/quests.slice.ts";
-import {quest} from "@src/_models/quests.ts";
+import {quest} from "@src/quests/models/quests.ts";
 
 
 export default function Quests() {
