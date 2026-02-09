@@ -2,6 +2,7 @@ import { call, put, takeLatest } from "redux-saga/effects";
 import {AxiosResponse} from "axios";
 import axios from '@src/_common/http/axiosInstance';
 import {
+    deleteQuestionRequest,
     getQuestionsRequest, getQuestionsSuccess,
     getQuestsRequest,
     getQuestsSuccess, putQuestionsRequest, putQuestionsSuccess, putQuestRequest,
@@ -22,7 +23,7 @@ function* getQuestions(action: questAction) {
     try {
         const response: AxiosResponse<[]> = yield call(() =>
             axios.post(`/getQuestions`,{
-                questions: action.payload,
+                quest_id: action.payload,
             })
         );
         yield put(getQuestionsSuccess(response.data));
@@ -38,7 +39,7 @@ function* putQuestions(action: questAction) {
                 questions: action.payload,
             })
         );
-        yield put(putQuestionsSuccess(response.data));
+        yield put(putQuestionsSuccess(response.data));  
     } catch (error: any) {
         yield put(questsFailure(error.message));
     }
@@ -47,11 +48,24 @@ function* putQuestions(action: questAction) {
 function* putQuest(action: questAction) {
     try {
         const response: AxiosResponse<[]> = yield call(() =>
-            axios.put(`/putQuest`,{
-                quest: action.payload,
-            })
+            axios.put(`/putQuest`,
+                action.payload,
+            )
         );
         yield put(getQuestsRequest());
+        yield put(putQuestionsSuccess(response.data));
+    } catch (error: any) {
+        yield put(questsFailure(error.message));
+    }
+}
+
+function* deleteQuestion(action: questAction) {
+    try {
+        const response: AxiosResponse<[]> = yield call(() =>
+            axios.delete(`/deleteQuestion`, {
+                data: { question_id: action.payload },
+            })
+        );
         yield put(putQuestionsSuccess(response.data));
     } catch (error: any) {
         yield put(questsFailure(error.message));
@@ -63,4 +77,5 @@ export default function* watchQuests() {
     yield takeLatest(getQuestionsRequest.type, getQuestions);
     yield takeLatest(putQuestionsRequest.type, putQuestions);
     yield takeLatest(putQuestRequest.type, putQuest);
+    yield takeLatest(deleteQuestionRequest.type, deleteQuestion);
 }

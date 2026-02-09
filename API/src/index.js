@@ -1,5 +1,6 @@
 const express = require('express')
 const bcrypt = require('bcrypt')
+const fs = require('fs');
 const app = express();
 const bodyParser = require('body-parser');
 const http = require('http');
@@ -11,7 +12,25 @@ let apiRoutes = express.Router();
 const port = process.env.PORT || 3000;
 const { SECRET_KEY } = require('./config');
 const {authorizeAdmin, verifyToken} = require("./helpers/middleware");
+const { writeFile } = require('fs/promises');
+const { randomUUID } = require('crypto');
+const path = require("path");
+const multer = require("multer");
+const uploadDir = '../UI/public/images/quests';
 
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+      cb(null, uploadDir);
+    },
+    filename: function (req, file, cb) {
+      cb(null,  file.originalname);
+    }
+  });
+
+if (!fs.existsSync(uploadDir)){
+    fs.mkdirSync(uploadDir, { recursive: true });
+}
+const upload = multer({ storage });
 apiRoutes.use((req, res, next) => { //allow cross-origin requests
     res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
     res.header("Access-Control-Allow-Origin", "http://localhost:5173");
@@ -26,7 +45,6 @@ apiRoutes.use((req, res, next) => { //allow cross-origin requests
 });
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ limit: '10mb', extended: true }));
-
 // Parsers
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false}));
@@ -56,40 +74,66 @@ apiRoutes.get('/getQuests', async (req, res) => {
     }
 });
 
+apiRoutes.delete('/deleteQuestion', authorizeAdmin, async (req, res) => {
+    const {question_id} = req.body;
+    console.log('question_id',question_id);
+    try {
+        await pool.query('DELETE FROM questions WHERE id = $1', [question_id]);
+        res.status(200).jsonp(question_id);
+    } catch (err) {
+        console.log('err',err);
+        res.status(500).send('Server error');
+    }
+});
+
 apiRoutes.post('/getQuestions', authorizeAdmin, async (req, res) => {
-    const {questions} = req.body;
-    console.log('questions',questions);
+    const {quest_id} = req.body;
+
     try {
         const result = await pool.query(
-            `SELECT q.*
-               FROM unnest($1::int[]) WITH ORDINALITY AS ids(id, ord)
-               JOIN questions q ON q.id = ids.id
-               ORDER BY ids.ord`,
-            [questions]
+            `SELECT * FROM questions WHERE quest_id IN ($1) ORDER BY sort_number`,
+            [quest_id]
         );
+
         res.status(200).json(result.rows);
     } catch (err) {
         console.log('err',err);
         res.status(500).send('Server error');
     }
 });
-apiRoutes.put('/putQuest', authorizeAdmin, async (req, res) => {
-    const {quest} = req.body;
+apiRoutes.put('/putQuest', authorizeAdmin, upload.single("image"), async (req, res) => {
+    console.log('req.body',req.body);
+    console.log('Uploaded file info:', req.file);
+    console.log('Saved filename:', req.file.filename); 
+
+
+    const quest = {
+        id: req.body.id,
+        name: req.body.name,
+        description: req.body.description,
+        start: req.body.start,
+        price: req.body.price,
+        duration: req.body.duration,
+        questions: req.body.questions,
+        public: req.body.public === "true", // convert to boolean if needed
+        image_url: req.file?.originalname ? req.file.originalname : req.body.image_url
+    };
+
     try {
-        quest.questions = JSON.stringify(quest.questions);
-        if (quest.id.length > 0) {
+    
+        if (quest.id) {
             await pool.query(
-                'UPDATE quests SET name = $2, description = $3, image = $4, start = $5, price = $6, duration = $7, questions = $8 WHERE id = $1',
-                [quest.id, quest.name, quest.description, quest.image, quest.start, quest.price, quest.duration, quest.questions]
+                'UPDATE quests SET name = $2, description = $3, image_url = $4, start = $5, price = $6, duration = $7, questions = $8, public = $9 WHERE id = $1',
+                [quest.id, quest.name, quest.description, quest.image_url, quest.start, quest.price, quest.duration, quest.questions, quest.public]
             );
         } else {
             await pool.query(
-                'INSERT INTO quests (name, description, image, start, price, duration, questions) VALUES ($1, $2, $3, $4, $5, $6, $7)',
-                [quest.name, quest.description, quest.image, quest.start, quest.price, quest.duration, quest.questions]
+                'INSERT INTO quests (name, description, image_url, start, price, duration, questions, public) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)',
+                [quest.name, quest.description, quest.image_url, quest.start, quest.price, quest.duration, quest.questions, quest.public]
             );
         }
 
-        res.status(200).send('Вопросы сохранены');
+        res.status(200).send('Квест сохранен');
     } catch (error) {
         console.log('error',error)
         res.status(500).send('Database error');
@@ -98,28 +142,56 @@ apiRoutes.put('/putQuest', authorizeAdmin, async (req, res) => {
 apiRoutes.put('/putQuestions', authorizeAdmin, async (req, res) => {
     const {questions} = req.body.questions;
     try {
-        for (const question of questions) {
-                const existingUser = await pool.query(
-                    'SELECT id FROM questions WHERE id = $1',
-                    [question.id]
-                );
-                if (existingUser.rows.length > 0) {
-                    await pool.query(
-                        'UPDATE questions  SET name = $2, description = $3, question = $4, buttons = $5, answer = $6 WHERE id = $1',
-                        [question.id, question.name, question.description, question.question, question.buttons, question.answer]
-                    );
-                } else {
-                    await pool.query(
-                        'INSERT INTO questions (name, description, question, buttons, answer) VALUES ($1, $2, $3, $4, $5)',
-                        [question.name, question.description, question.question, question.buttons, question.answer]
-                    );
-                }
+    const promises = questions.map(async (question) => {
+        const existingQuestion = await pool.query('SELECT id FROM questions WHERE id = $1', [question.id]);
+        if (existingQuestion.rows.length > 0) {
+          return pool.query(
+            'UPDATE questions SET name = $2, description = $3, question = $4, buttons = $5, answer = $6, text_after_answer = $7, sort_number = $8, quest_id = $9 WHERE id = $1',
+            [question.id, question.name, question.description, question.question, question.buttons, question.answer, question.text_after_answer, question.sort_number, question.quest_id]
+          );
+        } else {
+          return pool.query(
+            'INSERT INTO questions (name, description, question, buttons, answer, text_after_answer, sort_number, quest_id) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)',
+            [question.name, question.description, question.question, question.buttons, question.answer, question.text_after_answer, question.sort_number, question.quest_id]
+          );
         }
-        res.status(200).send('Вопросы сохранены');
+      });
+      
+      await Promise.all(promises);
+      questions.sort((a, b) => a.sort_number - b.sort_number);
+      res.status(200).jsonp(questions);
     } catch (error) {
+        console.log('error',error);
         res.status(500).send('Database error');
     }
 });
+
+
+//     try {
+//         for (const question of questions) {
+//                 const existingQuestion = await pool.query(
+//                     'SELECT id FROM questions WHERE id = $1',
+//                     [question.id]
+//                 );
+//                 console.log('existingQuestion',existingQuestion.rows.length);
+//                 if (existingQuestion.rows.length > 0) {
+//                     await pool.query(
+//                         'UPDATE questions  SET name = $2, description = $3, question = $4, buttons = $5, answer = $6 WHERE id = $1',
+//                         [question.id, question.name, question.description, question.question, question.buttons, question.answer]
+//                     );
+//                 } else {
+//                     console.log('question',question);
+//                     await pool.query(
+//                         'INSERT INTO questions (name, description, question, buttons, answer, text_after_answer) VALUES ($1, $2, $3, $4, $5, $6)',
+//                         [question.name, question.description, question.question, question.buttons, question.answer, question.text_after_answer]
+//                     );
+//                 }
+//         }
+//         res.status(200).send('Вопросы сохранены');
+//     } catch (error) {
+//         res.status(500).send('Database error');
+//     }
+// });
 
 apiRoutes.post('/addUser', async (req, res) => {
     const {login, username, password} = req.body;

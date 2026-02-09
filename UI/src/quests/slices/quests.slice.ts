@@ -39,7 +39,6 @@ const questsSlice = createSlice({
             // console.log('state', state);
         },
         getQuestionsSuccess: (state, action: PayloadAction<any>) => {
-            console.log('getQuestsSuccess action.payload', action.payload);
             // state.loading = false;
             state.questions = action.payload;
         },
@@ -48,8 +47,9 @@ const questsSlice = createSlice({
             // console.log('state', state);
         },
         putQuestionsSuccess: (state, action: PayloadAction<any>) => {
-            console.log('putQuestionsSuccess state.success', action.payload);
             // state.loading = false;
+            console.log('putQuestionsSuccess action.payload', action.payload);
+            state.questions = action.payload;
             state.success = true;
         },
         putQuestRequest: (state, _action: PayloadAction<any>) => {
@@ -57,7 +57,6 @@ const questsSlice = createSlice({
             // console.log('state', state);
         },
         putQuestSuccess: (state, action: PayloadAction<any>) => {
-            console.log('putQuestionsSuccess state.success', action.payload);
             // state.loading = false;
             state.success = true;
         },
@@ -66,7 +65,16 @@ const questsSlice = createSlice({
             state.questions = [];
             state.success = false;
         },
-
+        deleteQuestionRequest: (state, _action: PayloadAction<any>) => {
+            // state.loading = true;
+            // console.log('state', state);
+        },
+        deleteQuestionSuccess: (state, action: PayloadAction<any>) => {
+            // state.loading = false;
+            console.log('deleteQuestionSuccess action.payload', action.payload);
+            console.log('state.questions', state.questions);
+            state.questions = state.questions.filter((question: any) => question.id !== action.payload);
+        },
     }
 });
 
@@ -80,7 +88,9 @@ export const {
     putQuestionsSuccess,
     clear,
     putQuestRequest,
-    putQuestSuccess
+    putQuestSuccess,
+    deleteQuestionRequest,
+    deleteQuestionSuccess
 
 } =  questsSlice.actions;
 export const questsReducer = questsSlice.reducer;
